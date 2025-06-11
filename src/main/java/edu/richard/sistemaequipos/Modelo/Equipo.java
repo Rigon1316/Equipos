@@ -27,11 +27,9 @@ public class Equipo {
     @Column(name = "departamento")
     private String departamento;
 
-    // Constructor vacío
     public Equipo() {
     }
 
-    // Constructor completo con id
     public Equipo(Integer id, @NonNull String nombre, String marca, double precio,
                   LocalDate fecha, String departamento) {
         this.id = id;
