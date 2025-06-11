@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Equipos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2E7D32, #388E3C);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-left: 4px solid #2E7D32;
+        }
+
+        .form-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="date"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #2E7D32;
+            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2E7D32, #388E3C);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .response {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 14px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .response.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .response.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* Estilos para la tabla de equipos */
+        .equipos-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .equipos-table th,
+        .equipos-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .equipos-table th {
+            background: linear-gradient(135deg, #2E7D32, #388E3C);
+            color: white;
+            font-weight: 600;
+        }
+
+        .equipos-table tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .equipos-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .precio-cell {
+            color: #2E7D32;
+            font-weight: 600;
+        }
+
+        .id-cell {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .success-message {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .success-message .checkmark {
+            color: #28a745;
+            font-size: 1.2em;
+            margin-right: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .equipos-table {
+                font-size: 12px;
+            }
+
+            .equipos-table th,
+            .equipos-table td {
+                padding: 8px;
+            }
+        }
+
+        .icon {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🖥️ Sistema de Equipos</h1>
+        <p>Gestiona tus equipos de manera fácil y eficiente</p>
+    </div>
+
+    <div class="content">
+        <!-- Formulario para crear/actualizar equipo -->
+        <div class="form-section">
+            <h2>
+                <span>📝</span>
+                Crear/Actualizar Equipo
+            </h2>
+            <form id="equipoForm">
+                <input type="hidden" id="equipoId">
+
+                <div class="grid">
+                    <div class="form-group">
+                        <label for="nombre">Nombre del Equipo *</label>
+                        <input type="text" id="nombre" required placeholder="Ej: Laptop Dell XPS">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="marca">Marca</label>
+                        <input type="text" id="marca" placeholder="Ej: Dell, HP, Lenovo">
+                    </div>
+                </div>
+
+                <div class="grid">
+                    <div class="form-group">
+                        <label for="precio">Precio *</label>
+                        <input type="number" id="precio" min="0" step="0.01" required placeholder="0.00">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="departamento">Departamento *</label>
+                        <select id="departamento" required>
+                            <option value="">Seleccionar...</option>
+                            <option value="IT">IT</option>
+                            <option value="Recursos Humanos">Recursos Humanos</option>
+                            <option value="Contabilidad">Contabilidad</option>
+                            <option value="Ventas">Ventas</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="Producción">Producción</option>
+                            <option value="Desarrollo">Desarrollo</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="fecha">Fecha</label>
+                    <input type="date" id="fecha">
+                    <small style="color: #666;">Si no se especifica, se usará la fecha actual</small>
+                </div>
+
+                <button type="submit" class="btn btn-primary">💾 Guardar Equipo</button>
+                <button type="button" class="btn btn-secondary" onclick="limpiarFormulario()">🔄 Limpiar</button>
+            </form>
+        </div>
+
+        <!-- Sección de acciones -->
+        <div class="form-section">
+            <h2>
+                <span>⚡</span>
+                Acciones Rápidas
+            </h2>
+
+            <div class="grid">
+                <div>
+                    <label for="buscarId">Buscar por ID</label>
+                    <input type="number" id="buscarId" min="1" placeholder="ID del equipo">
+                    <button class="btn btn-secondary" onclick="buscarPorId()">🔍 Buscar</button>
+                </div>
+
+                <div>
+                    <label for="buscarDepartamento">Buscar por Departamento</label>
+                    <select id="buscarDepartamento">
+                        <option value="">Seleccionar...</option>
+                        <option value="IT">IT</option>
+                        <option value="Recursos Humanos">Recursos Humanos</option>
+                        <option value="Contabilidad">Contabilidad</option>
+                        <option value="Ventas">Ventas</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Producción">Producción</option>
+                        <option value="Desarrollo">Desarrollo</option>
+                    </select>
+                    <button class="btn btn-secondary" onclick="buscarPorDepartamento()">🔍 Buscar</button>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button class="btn btn-secondary" onclick="obtenerTodos()">📋 Ver Todos los Equipos</button>
+                <button class="btn btn-warning" onclick="eliminarEquipo()">🗑️ Eliminar Equipo</button>
+            </div>
+        </div>
+
+        <!-- Área de respuesta -->
+        <div id="response"></div>
+    </div>
+</div>
+
+<script>
+    const API_BASE = 'http://localhost:8080/api/equipo';
+    let modoEdicion = false;
+
+    // Función para mostrar respuesta
+    function mostrarRespuesta(data, esError = false) {
+        const responseDiv = document.getElementById('response');
+        responseDiv.className = `response ${esError ? 'error' : 'success'}`;
+
+        if (typeof data === 'string') {
+            responseDiv.textContent = data;
+        } else {
+            responseDiv.textContent = JSON.stringify(data, null, 2);
+        }
+    }
+
+    // Función para mostrar mensaje de éxito con equipo creado
+    function mostrarEquipoCreado(equipoData, mensaje) {
+        const responseDiv = document.getElementById('response');
+        responseDiv.className = 'response success';
+
+        let html = `<div class="success-message">
+            <span class="checkmark">✅</span> ${mensaje}
+        </div>`;
+
+        // Si tenemos datos del equipo, mostrarlos en tabla
+        if (equipoData) {
+            let equipo;
+            try {
+                // Intentar parsear si es JSON string
+                equipo = typeof equipoData === 'string' ? JSON.parse(equipoData) : equipoData;
+            } catch (e) {
+                // Si no se puede parsear, mostrar mensaje simple
+                responseDiv.innerHTML = html;
+                return;
+            }
+
+            html += `<table class="equipos-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Marca</th>
+                        <th>Precio</th>
+                        <th>Departamento</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="id-cell">#${equipo.id || 'N/A'}</td>
+                        <td><strong>${equipo.nombre || 'N/A'}</strong></td>
+                        <td>${equipo.marca || 'N/A'}</td>
+                        <td class="precio-cell">$${equipo.precio ? equipo.precio.toFixed(2) : '0.00'}</td>
+                        <td>${equipo.departamento || 'N/A'}</td>
+                        <td>${equipo.fecha || 'N/A'}</td>
+                    </tr>
+                </tbody>
+            </table>`;
+        }
+
+        responseDiv.innerHTML = html;
+    }
+
+    // Función para mostrar equipos en formato tabla
+    function mostrarEquiposEnTabla(equipos, titulo = "Equipos") {
+        const responseDiv = document.getElementById('response');
+        responseDiv.className = 'response success';
+
+        if (equipos.length === 0) {
+            responseDiv.innerHTML = `<strong>${titulo}:</strong><br>No se encontraron equipos.`;
+            return;
+        }
+
+        let tablaHTML = `<strong>${titulo}:</strong><br><br>`;
+        tablaHTML += `<table class="equipos-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Marca</th>
+                    <th>Precio</th>
+                    <th>Departamento</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+        equipos.forEach(equipo => {
+            tablaHTML += `
+                <tr>
+                    <td class="id-cell">#${equipo.id}</td>
+                    <td><strong>${equipo.nombre}</strong></td>
+                    <td>${equipo.marca || 'N/A'}</td>
+                    <td class="precio-cell">$${equipo.precio.toFixed(2)}</td>
+                    <td>${equipo.departamento}</td>
+                    <td>${equipo.fecha || 'N/A'}</td>
+                </tr>`;
+        });
+
+        tablaHTML += `</tbody></table>`;
+        tablaHTML += `<br><strong>Total de equipos:</strong> ${equipos.length}`;
+
+        responseDiv.innerHTML = tablaHTML;
+    }
+
+    // Manejar envío del formulario
+    document.getElementById('equipoForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const equipoData = {
+            nombre: document.getElementById('nombre').value,
+            marca: document.getElementById('marca').value || null,
+            precio: parseFloat(document.getElementById('precio').value),
+            departamento: document.getElementById('departamento').value,
+            fecha: document.getElementById('fecha').value || null
+        };
+
+        try {
+            let response;
+            if (modoEdicion) {
+                const id = document.getElementById('equipoId').value;
+                response = await fetch(`${API_BASE}/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(equipoData)
+                });
+            } else {
+                response = await fetch(API_BASE, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(equipoData)
+                });
+            }
+
+            const result = await response.text();
+
+            if (response.ok) {
+                const mensaje = modoEdicion ? 'Equipo actualizado exitosamente' : 'Equipo creado exitosamente';
+
+                // Intentar mostrar en formato tabla si es posible
+                try {
+                    const equipoCreado = JSON.parse(result);
+                    mostrarEquipoCreado(equipoCreado, mensaje);
+                } catch (parseError) {
+                    // Si no se puede parsear, mostrar mensaje simple
+                    mostrarRespuesta(`✅ ${mensaje}:\n${result}`);
+                }
+
+                limpiarFormulario();
+            } else {
+                mostrarRespuesta(`❌ Error: ${result}`, true);
+            }
+        } catch (error) {
+            mostrarRespuesta(`❌ Error de conexión: ${error.message}`, true);
+        }
+    });
+
+    // Buscar por ID
+    async function buscarPorId() {
+        const id = document.getElementById('buscarId').value;
+        if (!id) {
+            alert('Por favor ingresa un ID');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE}/${id}`);
+            const result = await response.text();
+
+            if (response.ok) {
+                const equipo = JSON.parse(result);
+                mostrarEquiposEnTabla([equipo], `Equipo con ID ${id}`);
+
+                // Cargar datos en el formulario para editar
+                cargarEquipoEnFormulario(equipo);
+            } else {
+                mostrarRespuesta(`❌ ${result}`, true);
+            }
+        } catch (error) {
+            mostrarRespuesta(`❌ Error: ${error.message}`, true);
+        }
+    }
+
+    // Cargar equipo en formulario
+    function cargarEquipoEnFormulario(equipo) {
+        document.getElementById('equipoId').value = equipo.id;
+        document.getElementById('nombre').value = equipo.nombre;
+        document.getElementById('marca').value = equipo.marca || '';
+        document.getElementById('precio').value = equipo.precio;
+        document.getElementById('departamento').value = equipo.departamento;
+        document.getElementById('fecha').value = equipo.fecha || '';
+
+        modoEdicion = true;
+        document.querySelector('.form-section h2').innerHTML = '<span>✏️</span> Actualizar Equipo';
+    }
+
+    // Buscar por departamento
+    async function buscarPorDepartamento() {
+        const departamento = document.getElementById('buscarDepartamento').value;
+        if (!departamento) {
+            alert('Por favor selecciona un departamento');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE}/departamento/${encodeURIComponent(departamento)}`);
+            const result = await response.text();
+
+            if (response.ok) {
+                try {
+                    const equipos = JSON.parse(result);
+                    if (Array.isArray(equipos)) {
+                        mostrarEquiposEnTabla(equipos, `Equipos del departamento ${departamento}`);
+                    } else {
+                        mostrarRespuesta(`✅ Equipos en ${departamento}:\n${result}`);
+                    }
+                } catch (parseError) {
+                    mostrarRespuesta(`✅ Equipos en ${departamento}:\n${result}`);
+                }
+            } else {
+                mostrarRespuesta(`❌ ${result}`, true);
+            }
+        } catch (error) {
+            mostrarRespuesta(`❌ Error: ${error.message}`, true);
+        }
+    }
+
+    // Obtener todos los equipos
+    async function obtenerTodos() {
+        try {
+            const response = await fetch(API_BASE);
+            const result = await response.text();
+
+            if (response.ok) {
+                try {
+                    const equipos = JSON.parse(result);
+                    if (Array.isArray(equipos)) {
+                        // Ordenar equipos por ID
+                        equipos.sort((a, b) => a.id - b.id);
+                        mostrarEquiposEnTabla(equipos, "Todos los equipos");
+                    } else {
+                        mostrarRespuesta(`✅ Todos los equipos:\n${result}`);
+                    }
+                } catch (parseError) {
+                    mostrarRespuesta(`✅ Todos los equipos:\n${result}`);
+                }
+            } else {
+                mostrarRespuesta(`❌ ${result}`, true);
+            }
+        } catch (error) {
+            mostrarRespuesta(`❌ Error: ${error.message}`, true);
+        }
+    }
+
+    // Eliminar equipo
+    async function eliminarEquipo() {
+        const id = prompt('Ingresa el ID del equipo a eliminar:');
+        if (!id) return;
+
+        if (!confirm(`¿Estás seguro de eliminar el equipo con ID ${id}?`)) return;
+
+        try {
+            const response = await fetch(`${API_BASE}/${id}`, {
+                method: 'DELETE'
+            });
+            const result = await response.text();
+
+            if (response.ok) {
+                mostrarRespuesta(`✅ ${result}`);
+            } else {
+                mostrarRespuesta(`❌ ${result}`, true);
+            }
+        } catch (error) {
+            mostrarRespuesta(`❌ Error: ${error.message}`, true);
+        }
+    }
+
+    // Limpiar formulario
+    function limpiarFormulario() {
+        document.getElementById('equipoForm').reset();
+        document.getElementById('equipoId').value = '';
+        modoEdicion = false;
+        document.querySelector('.form-section h2').innerHTML = '<span>📝</span> Crear/Actualizar Equipo';
+    }
+
+    // Establecer fecha actual por defecto
+    document.getElementById('fecha').valueAsDate = new Date();
+</script>
+</body>
+</html>
