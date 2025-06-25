@@ -2,171 +2,111 @@ package edu.richard.sistemaequipos.Controlador;
 
 import edu.richard.sistemaequipos.Modelo.Equipo;
 import edu.richard.sistemaequipos.Servicio.EquipoServicio;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
-import org.springframework.http.HttpStatus;
 
-@CrossOrigin(origins = "*") // Permitir todos los orígenes para testing
+@Tag(name = "Equipo", description = "Operaciones sobre equipos")
 @RestController
-@RequestMapping("/api/equipo")
+@RequestMapping("/api/equipos")
 public class EquipoControlador {
 
     @Autowired
     private EquipoServicio equipoServicio;
 
+    @Operation(summary = "Lista todos los equipos")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Lista obtenida correctamente"),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
     @GetMapping
-    public ResponseEntity<?> obtenerTodosLosEquipos() {
+    public ResponseEntity<List<Equipo>> obtenerTodosLosEquipos() {
         try {
-            List<Equipo> equipos = equipoServicio.obtenerTodosLosEquipos();
-            if (equipos.isEmpty()) {
-                return ResponseEntity.ok().body("No hay equipos registrados.");
-            }
-            return ResponseEntity.ok(equipos);
+            return ResponseEntity.ok(equipoServicio.obtenerTodosLosEquipos());
         } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                    .body("Error interno del servidor al obtener los equipos: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
+    @Operation(summary = "Obtiene un equipo por id")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Equipo encontrado"),
+        @ApiResponse(responseCode = "404", description = "Equipo no encontrado"),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
     @GetMapping("/{id}")
-    public ResponseEntity<?> obtenerEquipo(@PathVariable Long id) {
+    public ResponseEntity<Equipo> obtenerEquipo(@PathVariable Long id) {
         try {
-            if (id == null || id <= 0) {
-                return ResponseEntity.badRequest().body("El ID debe ser un número positivo válido.");
-            }
-
-            Optional<Equipo> equipo = equipoServicio.obtenerEquipoPorId(id);
-            if (equipo.isPresent()) {
-                return ResponseEntity.ok(equipo.get());
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("Equipo con ID " + id + " no encontrado.");
-            }
+            return equipoServicio.obtenerEquipoPorId(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
         } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                    .body("Error interno del servidor al obtener el equipo: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
+    @Operation(summary = "Crea un nuevo equipo")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Equipo creado correctamente"),
+        @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
     @PostMapping
-    public ResponseEntity<?> crearEquipo(@RequestBody Equipo nuevoEquipo) {
+    public ResponseEntity<Equipo> crearEquipo(@RequestBody Equipo nuevoEquipo) {
         try {
-            if (nuevoEquipo == null) {
-                return ResponseEntity.badRequest().body("Los datos del equipo son requeridos.");
-            }
-
-            if (nuevoEquipo.getNombre() == null || nuevoEquipo.getNombre().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("El nombre del equipo es obligatorio.");
-            }
-
-            if (nuevoEquipo.getPrecio() < 0) {
-                return ResponseEntity.badRequest().body("El precio no puede ser negativo.");
-            }
-
-            if (nuevoEquipo.getDepartamento() == null || nuevoEquipo.getDepartamento().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("El departamento es obligatorio.");
-            }
-
-            if (nuevoEquipo.getFecha() == null) {
-                nuevoEquipo.setFecha(LocalDate.now());
-            }
-
-            Equipo equipoGuardado = equipoServicio.guardarEquipo(nuevoEquipo);
-            return ResponseEntity.status(HttpStatus.CREATED).body(equipoGuardado);
-
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Datos inválidos: " + e.getMessage());
+            nuevoEquipo.setFechaAdquisicion(
+                nuevoEquipo.getFechaAdquisicion() != null ? nuevoEquipo.getFechaAdquisicion() : LocalDate.now()
+            );
+            nuevoEquipo.setUltimaFechaModificacion(LocalDate.now());
+            Equipo creado = equipoServicio.guardarEquipo(nuevoEquipo);
+            return ResponseEntity.ok(creado);
         } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                    .body("Error interno del servidor al crear el equipo: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
+    @Operation(summary = "Actualiza un equipo")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Equipo actualizado correctamente"),
+        @ApiResponse(responseCode = "404", description = "Equipo no encontrado"),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizarEquipo(@PathVariable Long id, @RequestBody Equipo equipoActualizado) {
+    public ResponseEntity<Equipo> actualizarEquipo(@PathVariable Long id, @RequestBody Equipo equipoActualizado) {
         try {
-            if (id == null || id <= 0) {
-                return ResponseEntity.badRequest().body("El ID debe ser un número positivo válido.");
+            equipoActualizado.setUltimaFechaModificacion(LocalDate.now());
+            Equipo actualizado = equipoServicio.actualizarEquipo(id, equipoActualizado);
+            if (actualizado != null) {
+                return ResponseEntity.ok(actualizado);
+            } else {
+                return ResponseEntity.notFound().build();
             }
-
-            if (equipoActualizado == null) {
-                return ResponseEntity.badRequest().body("Los datos del equipo son requeridos.");
-            }
-
-            if (equipoActualizado.getNombre() == null || equipoActualizado.getNombre().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("El nombre del equipo es obligatorio.");
-            }
-
-            if (equipoActualizado.getPrecio() < 0) {
-                return ResponseEntity.badRequest().body("El precio no puede ser negativo.");
-            }
-
-            if (equipoActualizado.getDepartamento() == null || equipoActualizado.getDepartamento().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("El departamento es obligatorio.");
-            }
-
-            if (!equipoServicio.existeEquipo(id)) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("Equipo con ID " + id + " no encontrado.");
-            }
-
-            Equipo equipoActualizadoGuardado = equipoServicio.actualizarEquipo(id, equipoActualizado);
-            return ResponseEntity.ok(equipoActualizadoGuardado);
-
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Datos inválidos: " + e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                    .body("Error interno del servidor al actualizar el equipo: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
+    @Operation(summary = "Elimina un equipo")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Equipo eliminado correctamente"),
+        @ApiResponse(responseCode = "404", description = "Equipo no encontrado"),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminarEquipo(@PathVariable Long id) {
+    public ResponseEntity<String> eliminarEquipo(@PathVariable Long id) {
         try {
-            if (id == null || id <= 0) {
-                return ResponseEntity.badRequest().body("El ID debe ser un número positivo válido.");
-            }
-
             equipoServicio.eliminarEquipo(id);
-            return ResponseEntity.ok().body("Equipo eliminado exitosamente.");
-
-        } catch (RuntimeException e) {
-            if (e.getMessage().contains("no encontrado")) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-            }
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.ok("Equipo eliminado correctamente");
         } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                    .body("Error interno del servidor al eliminar el equipo: " + e.getMessage());
-        }
-    }
-
-    @GetMapping("/departamento/{departamento}")
-    public ResponseEntity<?> obtenerEquiposPorDepartamento(@PathVariable String departamento) {
-        try {
-            if (departamento == null || departamento.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("El departamento no puede estar vacío.");
-            }
-
-            List<Equipo> equipos = equipoServicio.buscarEquiposPorDepartamento(departamento);
-
-            if (equipos.isEmpty()) {
-                return ResponseEntity.ok().body("No se encontraron equipos en el departamento: " + departamento);
-            }
-
-            return ResponseEntity.ok(equipos);
-
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Datos inválidos: " + e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                    .body("Error interno del servidor al buscar equipos por departamento: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar el equipo");
         }
     }
 }

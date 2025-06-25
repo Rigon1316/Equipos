@@ -1,136 +1,182 @@
-package edu.richard.sistemaequipos.Modelo;
+    package edu.richard.sistemaequipos.Modelo;
 
-import jakarta.persistence.*;
-import org.springframework.lang.NonNull;
+    import jakarta.persistence.*;
+    import java.time.LocalDate;
+    import io.swagger.v3.oas.annotations.media.Schema;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+    @Schema(description = "Entidad Equipo")
+    @Entity
+    public class Equipo {
 
-@Entity
-public class Equipo {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+        @Schema(description = "ID del equipo", example = "1")
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long id;
 
-    @NonNull
-    private String nombre;
+        @Schema(description = "Nombre del equipo", example = "Laptop HP")
+        private String nombre;
+        @Schema(description = "Marca del equipo", example = "HP")
+        private String marca;
+        @Schema(description = "Modelo del equipo", example = "EliteBook 840")
+        private String modelo;
+        @Schema(description = "Precio del equipo", example = "1200.0")
+        private double precio;
 
-    private String marca;
+        @Schema(description = "Fecha de adquisición", example = "2024-06-01")
+        @Column(name = "fecha_adquisicion")
+        private LocalDate fechaAdquisicion;
 
-    private double precio;
+        @Schema(description = "Última fecha de modificación", example = "2024-06-25")
+        @Column(name = "ultima_fecha_modificacion")
+        private LocalDate ultimaFechaModificacion;
 
-    private LocalDate fecha;
+        @Schema(description = "Departamento al que pertenece el equipo", example = "TI")
+        private String departamento;
 
-    @Column(name = "ultima_fecha_modificacion")
-    private LocalDateTime ultimaFechaModificacion;
+        @Schema(description = "Estado del equipo", example = "ACTIVO")
+        private String estado;
 
-    @Column(name = "departamento")
-    private String departamento;
+        @Schema(description = "Responsable del equipo")
+        @ManyToOne
+        @JoinColumn(name = "responsable_id")
+        private Responsable responsable;
 
-    public Equipo() {
+        @Schema(description = "Oficina donde se encuentra el equipo")
+        @ManyToOne
+        @JoinColumn(name = "oficina_id")
+        private Oficina oficina;
+
+        public Equipo() {
+        }
+
+        public Equipo(String nombre, String marca, String modelo, double precio, LocalDate fechaAdquisicion, String departamento, String estado) {
+            this.nombre = nombre;
+            this.marca = marca;
+            this.modelo = modelo;
+            this.precio = precio;
+            this.fechaAdquisicion = fechaAdquisicion;
+            this.departamento = departamento;
+            this.estado = estado;
+        }
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public String getNombre() {
+            return nombre;
+        }
+
+        public void setNombre(String nombre) {
+            this.nombre = nombre;
+        }
+
+        public String getMarca() {
+            return marca;
+        }
+
+        public void setMarca(String marca) {
+            this.marca = marca;
+        }
+
+        public String getModelo() {
+            return modelo;
+        }
+
+        public void setModelo(String modelo) {
+            this.modelo = modelo;
+        }
+
+        public double getPrecio() {
+            return precio;
+        }
+
+        public void setPrecio(double precio) {
+            this.precio = precio;
+        }
+
+        public LocalDate getFechaAdquisicion() {
+            return fechaAdquisicion;
+        }
+
+        public void setFechaAdquisicion(LocalDate fechaAdquisicion) {
+            this.fechaAdquisicion = fechaAdquisicion;
+        }
+
+        public LocalDate getUltimaFechaModificacion() {
+            return ultimaFechaModificacion;
+        }
+
+        public void setUltimaFechaModificacion(LocalDate ultimaFechaModificacion) {
+            this.ultimaFechaModificacion = ultimaFechaModificacion;
+        }
+
+        public String getDepartamento() {
+            return departamento;
+        }
+
+        public void setDepartamento(String departamento) {
+            this.departamento = departamento;
+        }
+
+        public String getEstado() {
+            return estado;
+        }
+
+        public void setEstado(String estado) {
+            this.estado = estado;
+        }
+
+        public Responsable getResponsable() {
+            return responsable;
+        }
+
+        public void setResponsable(Responsable responsable) {
+            this.responsable = responsable;
+        }
+
+        public Oficina getOficina() {
+            return oficina;
+        }
+
+        public void setOficina(Oficina oficina) {
+            this.oficina = oficina;
+        }
+
+        @PrePersist
+        protected void onCreate() {
+            this.ultimaFechaModificacion = LocalDate.now();
+            if (this.fechaAdquisicion == null) {
+                this.fechaAdquisicion = LocalDate.now();
+            }
+            if (this.estado == null) {
+                this.estado = "ACTIVO";
+            }
+        }
+
+        @PreUpdate
+        protected void onUpdate() {
+            this.ultimaFechaModificacion = LocalDate.now();
+        }
+
+        @Override
+        public String toString() {
+            return "Equipo{" +
+                    "id=" + id +
+                    ", nombre='" + nombre + '\'' +
+                    ", marca='" + marca + '\'' +
+                    ", modelo='" + modelo + '\'' +
+                    ", precio=" + precio +
+                    ", fechaAdquisicion=" + fechaAdquisicion +
+                    ", ultimaFechaModificacion=" + ultimaFechaModificacion +
+                    ", departamento='" + departamento + '\'' +
+                    ", estado='" + estado + '\'' +
+                    ", responsable=" + (responsable != null ? responsable.getNombreResponsable() : "null") +
+                    ", oficina=" + (oficina != null ? oficina.getNombre() : "null") +
+                    '}';
+        }
     }
-
-    public Equipo(Integer id, @NonNull String nombre, String marca, double precio,
-                  LocalDate fecha, String departamento) {
-        this.id = id;
-        this.nombre = nombre;
-        this.marca = marca;
-        this.precio = precio;
-        this.fecha = fecha;
-        this.departamento = departamento;
-        this.ultimaFechaModificacion = LocalDateTime.now();
-    }
-
-    // Constructor sin id
-    public Equipo(@NonNull String nombre, String marca, double precio,
-                  LocalDate fecha, String departamento) {
-        this.nombre = nombre;
-        this.marca = marca;
-        this.precio = precio;
-        this.fecha = fecha;
-        this.departamento = departamento;
-        this.ultimaFechaModificacion = LocalDateTime.now();
-    }
-
-    // Método que se ejecuta antes de persistir la entidad
-    @PrePersist
-    protected void onCreate() {
-        this.ultimaFechaModificacion = LocalDateTime.now();
-    }
-
-    //Método que se ejecuta antes de actualizar la entidad
-    @PreUpdate
-    protected void onUpdate() {
-        this.ultimaFechaModificacion = LocalDateTime.now();
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    @NonNull
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(@NonNull String nombre) {
-        this.nombre = nombre;
-    }
-
-    public String getMarca() {
-        return marca;
-    }
-
-    public void setMarca(String marca) {
-        this.marca = marca;
-    }
-
-    public double getPrecio() {
-        return precio;
-    }
-
-    public void setPrecio(double precio) {
-        this.precio = precio;
-    }
-
-    public LocalDate getFecha() {
-        return fecha;
-    }
-
-    public void setFecha(LocalDate fecha) {
-        this.fecha = fecha;
-    }
-
-    public LocalDateTime getUltimaFechaModificacion() {
-        return ultimaFechaModificacion;
-    }
-
-    public void setUltimaFechaModificacion(LocalDateTime ultimaFechaModificacion) {
-        this.ultimaFechaModificacion = ultimaFechaModificacion;
-    }
-
-    public String getDepartamento() {
-        return departamento;
-    }
-
-    public void setDepartamento(String departamento) {
-        this.departamento = departamento;
-    }
-
-    @Override
-    public String toString() {
-        return "Equipo{" +
-                "id=" + id +
-                ", nombre='" + nombre + '\'' +
-                ", marca='" + marca + '\'' +
-                ", precio=" + precio +
-                ", fecha=" + fecha +
-                ", ultimaFechaModificacion=" + ultimaFechaModificacion +
-                ", departamento='" + departamento + '\'' +
-                '}';
-    }
-}
