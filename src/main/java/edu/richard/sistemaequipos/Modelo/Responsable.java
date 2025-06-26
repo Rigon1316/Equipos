@@ -6,10 +6,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import io.swagger.v3.oas.annotations.media.Schema;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Schema(description = "Entidad Responsable")
 @Entity
-@Table(name = "responsable")
+@Table(name = "responsables")
 public class Responsable {
 
     @Schema(description = "ID del responsable", example = "1")
@@ -17,23 +19,23 @@ public class Responsable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Schema(description = "Nombre del responsable", example = "Juan")
+    @Schema(description = "Nombre del responsable", example = "Juan Pérez")
     @Column(nullable = false)
-    private String nombreResponsable;
+    private String nombre;
 
-    @Schema(description = "Apellido del responsable", example = "Pérez")
+    @Schema(description = "Apellido del responsable", example = "García")
     @Column(nullable = false)
-    private String apellidoResponsable;
+    private String apellido;
 
     @Schema(description = "Cédula del responsable", example = "12345678")
     @Column(nullable = false)
     private String cedula;
 
-    @Schema(description = "Email del responsable", example = "juan@email.com")
-    @Column(nullable = false)
+    @Schema(description = "Email del responsable", example = "juan.perez@empresa.com")
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @Schema(description = "Teléfono del responsable", example = "555-1234")
+    @Schema(description = "Teléfono del responsable", example = "+1234567890")
     @Column(nullable = false)
     private String telefono;
 
@@ -41,7 +43,7 @@ public class Responsable {
     @Column(nullable = false)
     private String cargo;
 
-    @Schema(description = "Unidad administrativa", example = "TI")
+    @Schema(description = "Unidad del responsable", example = "IT")
     @Column(nullable = false)
     private String unidad;
 
@@ -49,23 +51,25 @@ public class Responsable {
     @Column(name = "ultima_fecha_modificacion")
     private LocalDateTime ultimaFechaModificacion;
 
-    @Schema(description = "Oficina del responsable")
-    @ManyToOne
+    @Schema(description = "Oficina a la que pertenece el responsable")
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "oficina_id")
+    @JsonBackReference
     private Oficina oficina;
 
-    @Schema(description = "Equipos a cargo del responsable")
-    @OneToMany(mappedBy = "responsable")
+    @Schema(description = "Equipos asignados al responsable")
+    @OneToMany(mappedBy = "responsable", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<Equipo> equipos = new ArrayList<>();
 
     public Responsable() {
     }
 
-    public Responsable(Long id, @NonNull String nombreResponsable, @NonNull String apellidoResponsable,
+    public Responsable(Long id, @NonNull String nombre, @NonNull String apellido,
                        @NonNull String cedula, String email, String telefono, String cargo, String unidad) {
         this.id = id;
-        this.nombreResponsable = nombreResponsable;
-        this.apellidoResponsable = apellidoResponsable;
+        this.nombre = nombre;
+        this.apellido = apellido;
         this.cedula = cedula;
         this.email = email;
         this.telefono = telefono;
@@ -73,10 +77,10 @@ public class Responsable {
         this.unidad = unidad;
     }
 
-    public Responsable(@NonNull String nombreResponsable, @NonNull String apellidoResponsable,
+    public Responsable(@NonNull String nombre, @NonNull String apellido,
                        @NonNull String cedula, String email, String telefono, String cargo, String unidad) {
-        this.nombreResponsable = nombreResponsable;
-        this.apellidoResponsable = apellidoResponsable;
+        this.nombre = nombre;
+        this.apellido = apellido;
         this.cedula = cedula;
         this.email = email;
         this.telefono = telefono;
@@ -103,21 +107,21 @@ public class Responsable {
     }
 
     @NonNull
-    public String getNombreResponsable() {
-        return nombreResponsable;
+    public String getNombre() {
+        return nombre;
     }
 
-    public void setNombreResponsable(@NonNull String nombreResponsable) {
-        this.nombreResponsable = nombreResponsable;
+    public void setNombre(@NonNull String nombre) {
+        this.nombre = nombre;
     }
 
     @NonNull
-    public String getApellidoResponsable() {
-        return apellidoResponsable;
+    public String getApellido() {
+        return apellido;
     }
 
-    public void setApellidoResponsable(@NonNull String apellidoResponsable) {
-        this.apellidoResponsable = apellidoResponsable;
+    public void setApellido(@NonNull String apellido) {
+        this.apellido = apellido;
     }
 
     @NonNull
@@ -189,8 +193,8 @@ public class Responsable {
     public String toString() {
         return "Responsable{" +
                 "id=" + id +
-                ", nombreResponsable='" + nombreResponsable + '\'' +
-                ", apellidoResponsable='" + apellidoResponsable + '\'' +
+                ", nombre='" + nombre + '\'' +
+                ", apellido='" + apellido + '\'' +
                 ", cedula='" + cedula + '\'' +
                 ", email='" + email + '\'' +
                 ", telefono='" + telefono + '\'' +

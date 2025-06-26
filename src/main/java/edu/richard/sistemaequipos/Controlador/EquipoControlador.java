@@ -30,7 +30,8 @@ public class EquipoControlador {
     @GetMapping
     public ResponseEntity<List<Equipo>> obtenerTodosLosEquipos() {
         try {
-            return ResponseEntity.ok(equipoServicio.obtenerTodosLosEquipos());
+            List<Equipo> equipos = equipoServicio.obtenerTodosLosEquipos();
+            return ResponseEntity.ok(equipos);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -62,12 +63,19 @@ public class EquipoControlador {
     @PostMapping
     public ResponseEntity<Equipo> crearEquipo(@RequestBody Equipo nuevoEquipo) {
         try {
-            nuevoEquipo.setFechaAdquisicion(
-                nuevoEquipo.getFechaAdquisicion() != null ? nuevoEquipo.getFechaAdquisicion() : LocalDate.now()
-            );
+            // Establecer fechas por defecto si no vienen
+            if (nuevoEquipo.getFechaAdquisicion() == null) {
+                nuevoEquipo.setFechaAdquisicion(LocalDate.now());
+            }
             nuevoEquipo.setUltimaFechaModificacion(LocalDate.now());
+            
+            // Establecer estado por defecto si no viene
+            if (nuevoEquipo.getEstado() == null) {
+                nuevoEquipo.setEstado("ACTIVO");
+            }
+            
             Equipo creado = equipoServicio.guardarEquipo(nuevoEquipo);
-            return ResponseEntity.ok(creado);
+            return ResponseEntity.status(HttpStatus.CREATED).body(creado);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

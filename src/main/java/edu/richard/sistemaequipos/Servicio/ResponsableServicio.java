@@ -34,8 +34,8 @@ public class ResponsableServicio {
         Optional<Responsable> optionalResponsable = responsableRepositorio.findById(id);
         if (optionalResponsable.isPresent()) {
             Responsable responsable = optionalResponsable.get();
-            responsable.setNombreResponsable(responsableActualizado.getNombreResponsable());
-            responsable.setApellidoResponsable(responsableActualizado.getApellidoResponsable());
+            responsable.setNombre(responsableActualizado.getNombre());
+            responsable.setApellido(responsableActualizado.getApellido());
             responsable.setCedula(responsableActualizado.getCedula());
             responsable.setEmail(responsableActualizado.getEmail());
             responsable.setTelefono(responsableActualizado.getTelefono());

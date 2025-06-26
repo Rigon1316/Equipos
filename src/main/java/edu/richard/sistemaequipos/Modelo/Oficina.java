@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import io.swagger.v3.oas.annotations.media.Schema;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Schema(description = "Entidad Oficina")
 @Entity
@@ -31,10 +32,12 @@ public class Oficina {
     // Relación One-to-Many con Equipo (relación inversa)
     @Schema(description = "Equipos en la oficina")
     @OneToMany(mappedBy = "oficina", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<Equipo> equipos = new ArrayList<>();
 
     @Schema(description = "Responsables en la oficina")
     @OneToMany(mappedBy = "oficina", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<Responsable> responsables = new ArrayList<>();
 
     // Constructor vacío (requerido por JPA)
